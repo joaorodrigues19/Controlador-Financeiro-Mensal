@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, visitanteGuard } from './core/auth.service';
+import { authGuard, visitanteGuard } from './core/auth/auth.guards';
 import { Shell } from './layout/shell';
 import { Lancamentos } from './pages/lancamentos';
 import { Login } from './pages/login';

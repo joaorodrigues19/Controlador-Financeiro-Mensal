@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { FinancasStore } from '../core/financas.store';
+import { FinancasStore } from '../core/state/financas.store';
 
 @Component({
   selector: 'app-visao-geral',

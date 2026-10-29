@@ -1,0 +1,56 @@
+<h2>{{ it ? 'Editar lançamento' : 'Novo lançamento' }} · {{ titulo }}</h2>
+<form class="form" (ngSubmit)="salvar()" autocomplete="off">
+  <div class="field full"><label for="iItem">Descrição</label>
+    <input id="iItem" name="item" [(ngModel)]="item" required placeholder="Ex.: Mercado, Uber, Farmácia"></div>
+  <div class="field"><label for="iValor">{{ it ? 'Valor (R$)' : 'Valor total (R$)' }}</label>
+    <input id="iValor" name="valor" inputmode="decimal" [ngModel]="valor()" (ngModelChange)="valor.set($event)"
+           [disabled]="!!it?.auto" placeholder="0,00"></div>
+  <div class="field"><label for="iDia">Dia do vencimento</label>
+    <input id="iDia" name="dia" type="number" min="1" max="31" [(ngModel)]="dia"></div>
+  <div class="field full"><label for="iForma">Forma de pagamento</label>
+    <select id="iForma" name="forma" [(ngModel)]="cartao">
+      <option value="">Pix, débito ou dinheiro</option>
+      <option value="Nubank">Cartão Nubank (entra na fatura)</option>
+    </select></div>
+  <div class="field full"><label for="iCat">Categoria</label>
+    <select id="iCat" name="cat" [ngModel]="cat()" (ngModelChange)="cat.set($event)">
+      @for (c of categorias(); track c) { <option [value]="c">{{ c }}</option> }
+      <option [value]="novaCat">+ Nova categoria…</option>
+    </select></div>
+  @if (cat() === novaCat) {
+    <div class="field full"><label for="iNovaCat">Nome da nova categoria</label>
+      <input id="iNovaCat" name="novaCat" [(ngModel)]="nomeNovaCat"></div>
+  }
+  <div class="field full"><label>Tipo</label>
+    <div class="seg">
+      @for (t of tipos; track t) {
+        <button type="button" [attr.aria-pressed]="tipo() === t" (click)="tipo.set(t)">{{ t }}</button>
+      }
+    </div></div>
+  @if (!it && tipo() === 'Parcelado') {
+    <div class="field full"><label for="iParc">Em quantas vezes?</label>
+      <input id="iParc" name="parc" type="number" min="2" max="48" [ngModel]="parcelas()" (ngModelChange)="parcelas.set(+$event)">
+      <span class="hint">{{ dicaParcelas() }}</span></div>
+  }
+  <div class="field full"><label>Status</label>
+    <div class="seg">
+      @for (s of statusOpcoes; track s) {
+        <button type="button" [attr.aria-pressed]="status === s" (click)="status = s">{{ s }}</button>
+      }
+    </div></div>
+  @if (it?.parc) {
+    <label class="check full"><input type="checkbox" name="futuras" [(ngModel)]="futuras"> Aplicar exclusão também às próximas parcelas</label>
+  }
+  @if (it?.auto) {
+    <p class="hint full" style="margin:0">O dízimo é calculado como 10% do salário bruto. Para mudar o valor, edite a renda do mês.</p>
+  }
+  <button type="submit" hidden></button>
+</form>
+<div class="actions">
+  @if (it) {
+    <button class="btn danger" [class.armed]="armado()" (click)="excluir()">{{ armado() ? 'Confirmar exclusão' : 'Excluir' }}</button>
+  }
+  <span class="sp"></span>
+  <button class="btn" (click)="store.fechar()">Cancelar</button>
+  <button class="btn primary" (click)="salvar()">Salvar</button>
+</div>

@@ -2,10 +2,10 @@ import { Component, HostListener, OnInit, computed, inject, signal } from '@angu
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
-import { AuthService } from '../core/auth.service';
-import { FinancasStore } from '../core/financas.store';
-import { keyAdd, keyLabel } from '../core/format';
-import { ToastService } from '../core/toast.service';
+import { AuthService } from '../core/auth/auth.service';
+import { FinancasStore } from '../core/state/financas.store';
+import { keyAdd, keyLabel } from '../core/domain/financas.calc';
+import { ToastService } from '../core/ui/toast.service';
 import { ModalHost } from '../modais/modal-host';
 import { MarcaIcone } from './marca-icone';
 
@@ -13,50 +13,7 @@ import { MarcaIcone } from './marca-icone';
 @Component({
   selector: 'app-shell',
   imports: [RouterOutlet, RouterLink, MarcaIcone, ModalHost],
-  template: `
-    <header>
-      <div class="wrap bar">
-        <div class="brand"><div class="mark" aria-hidden="true"><app-marca-icone /></div><span>Controle Financeiro</span></div>
-        <div class="tabs top" role="tablist">
-          <a class="tab" routerLink="/visao-geral" [attr.aria-selected]="aba() === 'ano'">Visão geral</a>
-          <a class="tab" routerLink="/painel" [attr.aria-selected]="aba() !== 'ano'">Painel</a>
-        </div>
-        <div class="month">
-          <button class="ibtn" (click)="passo(-1)" [attr.aria-label]="aba() === 'ano' ? 'Ano anterior' : 'Mês anterior'">‹</button>
-          <b>{{ rotuloMes() }}</b>
-          <button class="ibtn" (click)="passo(1)" [attr.aria-label]="aba() === 'ano' ? 'Próximo ano' : 'Próximo mês'">›</button>
-          <button class="ibtn lockbtn" (click)="sair()" aria-label="Sair" title="Sair">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-          </button>
-        </div>
-      </div>
-    </header>
-
-    <main class="wrap">
-      @if (store.erro(); as erro) {
-        <div class="card"><div class="empty">{{ erro }}<div class="actions" style="justify-content:center">
-          <button class="btn" (click)="store.carregar()">Tentar de novo</button></div></div></div>
-      } @else if (!store.carregado()) {
-        <div class="card"><div class="empty">Carregando…</div></div>
-      } @else {
-        <router-outlet />
-      }
-    </main>
-
-    <nav class="bottom" role="tablist">
-      <a class="tab" routerLink="/visao-geral" [attr.aria-selected]="aba() === 'ano'">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>Visão geral</a>
-      <a class="tab" routerLink="/painel" [attr.aria-selected]="aba() !== 'ano'">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Painel</a>
-    </nav>
-
-    <div class="tip" [hidden]="!tip()" [innerHTML]="tip()?.html ?? ''" [style.left.px]="tip()?.x" [style.top.px]="tip()?.y"></div>
-    @if (store.carregado()) {
-      <button class="fab" (click)="store.abrir({ tipo: 'item', id: null })" aria-label="Novo lançamento">+</button>
-    }
-    <app-modal-host />
-    @if (toast.mensagem(); as msg) { <div class="toast" role="status">{{ msg }}</div> }
-  `,
+  templateUrl: './shell.html',
 })
 export class Shell implements OnInit {
   protected store = inject(FinancasStore);

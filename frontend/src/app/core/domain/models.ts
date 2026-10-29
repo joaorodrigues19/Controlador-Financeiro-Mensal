@@ -32,3 +32,25 @@ export interface Perfil {
   email: string;
   categorias: string[];
 }
+
+export interface Renda {
+  bruto: number;
+  liquido: number;
+  extra: number;
+  extraObs: string;
+}
+
+/** Dados de um lançamento enviados à API; em um Parcelado, {@link NovoLancamento.valor} é o total da compra. */
+export interface AtualizaLancamento {
+  item: string;
+  valor: number;
+  cat: string;
+  tipo: Tipo;
+  dia: number;
+  status: Status;
+  cartao: string | null;
+}
+
+export interface NovoLancamento extends AtualizaLancamento {
+  parcelas: number;
+}

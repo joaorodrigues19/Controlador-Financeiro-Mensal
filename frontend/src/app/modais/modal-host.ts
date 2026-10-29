@@ -1,5 +1,5 @@
 import { Component, HostListener, inject } from '@angular/core';
-import { FinancasStore } from '../core/financas.store';
+import { FinancasStore } from '../core/state/financas.store';
 import { ModalItem } from './modal-item';
 import { ModalRenda } from './modal-renda';
 
@@ -7,18 +7,7 @@ import { ModalRenda } from './modal-renda';
 @Component({
   selector: 'app-modal-host',
   imports: [ModalRenda, ModalItem],
-  template: `
-    @if (store.modal(); as m) {
-      <div class="scrim" (click)="fora($event)">
-        <div class="sheet" role="dialog" aria-modal="true">
-          @switch (m.tipo) {
-            @case ('renda') { <app-modal-renda /> }
-            @case ('item') { <app-modal-item [id]="$any(m).id" /> }
-          }
-        </div>
-      </div>
-    }
-  `,
+  templateUrl: './modal-host.html',
 })
 export class ModalHost {
   protected store = inject(FinancasStore);

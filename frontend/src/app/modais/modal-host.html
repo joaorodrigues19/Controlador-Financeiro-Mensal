@@ -1,0 +1,10 @@
+@if (store.modal(); as m) {
+  <div class="scrim" (click)="fora($event)">
+    <div class="sheet" role="dialog" aria-modal="true">
+      @switch (m.tipo) {
+        @case ('renda') { <app-modal-renda /> }
+        @case ('item') { <app-modal-item [id]="$any(m).id" /> }
+      }
+    </div>
+  </div>
+}
