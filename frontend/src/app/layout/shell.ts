@@ -6,12 +6,13 @@ import { AuthService } from '../core/auth.service';
 import { FinancasStore } from '../core/financas.store';
 import { keyAdd, keyLabel } from '../core/format';
 import { ToastService } from '../core/toast.service';
+import { ModalHost } from '../modais/modal-host';
 import { MarcaIcone } from './marca-icone';
 
 /** Cabeçalho com seletor de mês, abas (topo no desktop, barra inferior no celular), tooltip e toast. */
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, MarcaIcone],
+  imports: [RouterOutlet, RouterLink, MarcaIcone, ModalHost],
   template: `
     <header>
       <div class="wrap bar">
@@ -50,6 +51,7 @@ import { MarcaIcone } from './marca-icone';
     </nav>
 
     <div class="tip" [hidden]="!tip()" [innerHTML]="tip()?.html ?? ''" [style.left.px]="tip()?.x" [style.top.px]="tip()?.y"></div>
+    <app-modal-host />
     @if (toast.mensagem(); as msg) { <div class="toast" role="status">{{ msg }}</div> }
   `,
 })
