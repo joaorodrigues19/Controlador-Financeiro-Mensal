@@ -27,6 +27,18 @@ Controle financeiro pessoal: renda do mês, lançamentos (fixos, variáveis, par
    ./mvnw spring-boot:run
    ```
 
+## Rodando o front-end
+
+Com o back-end no ar, em outro terminal:
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+Abra http://localhost:4200. As chamadas para `/api` são repassadas para a porta 8080 pelo `proxy.conf.json`.
+
 ## API
 
 | Método | Rota | O que faz |
