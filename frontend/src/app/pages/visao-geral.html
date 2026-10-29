@@ -1,0 +1,106 @@
+@let dv = dividas();
+@let v = vm();
+<div class="grid">
+  <div class="card c12 debt">
+    @if (dv.lista.length) {
+      <div class="debthead">
+        <div>
+          <div class="eyebrow">Quanto eu devo</div>
+          <div class="big num" style="font-size:clamp(30px,5vw,40px);margin:4px 0 6px">{{ f.brl(dv.total) }}</div>
+          <span class="pill good">✓ Livre de parcelas em {{ dv.fim }}</span>
+        </div>
+        <div class="hint debtnote">Soma das parcelas que ainda não foram pagas, de todos os parcelamentos. Vai diminuindo conforme você marca como pago.</div>
+      </div>
+      <div class="rows">
+        @for (d of dv.lista; track d.item + d.n + d.ate) {
+          <div class="row" style="grid-template-columns:minmax(0,1fr) auto">
+            <div style="min-width:0">
+              <div class="t">{{ d.item }}<span class="tag ptag">{{ d.pagas }} de {{ d.n }} pagas</span>
+                @if (d.cartao) { <span class="tag ctag">{{ d.cartao }}</span> }</div>
+              <div class="m">faltam {{ d.qtd }} · até {{ d.ateTxt }}</div>
+              <div class="track debttrack"><div class="fill" [style.width.%]="d.largura"></div></div>
+            </div>
+            <div class="val num">{{ f.brl(d.rest) }}<small>{{ d.qtd > 1 ? f.brl(d.rest / d.qtd) + '/mês' : 'última' }}</small></div>
+          </div>
+        }
+      </div>
+    } @else {
+      <h3>Quanto eu devo</h3>
+      <div class="empty">Nenhuma parcela em aberto. Livre de dívidas! ✓</div>
+    }
+  </div>
+
+  <div class="card c12"><div class="kpis">
+    <div class="kpi"><div class="eyebrow">Renda {{ ano() }} até agora</div><div class="v num">{{ f.brl0(v.sR) }}</div>
+      <div class="h">{{ v.done.length }} meses fechados</div></div>
+    <div class="kpi"><div class="eyebrow">Gastos até agora</div><div class="v num">{{ f.brl0(v.sG) }}</div>
+      <div class="h">média {{ f.brl0(v.done.length ? v.sG / v.done.length : 0) }}/mês</div></div>
+    <div class="kpi"><div class="eyebrow">Sobra acumulada</div>
+      <div class="v num" [style.color]="v.sR - v.sG < 0 ? 'var(--bad)' : 'var(--fg)'">{{ f.brl0(v.sR - v.sG) }}</div>
+      <div class="h">{{ f.pct(v.sR ? (v.sR - v.sG) / v.sR : 0) }} da renda</div></div>
+    <div class="kpi"><div class="eyebrow">Maior categoria</div><div class="v">{{ v.maiorCat ?? '—' }}</div>
+      <div class="h">@if (v.maiorCat) { {{ v.maiorCatPct }} dos gastos do ano }</div></div>
+  </div></div>
+
+  <div class="card c12">
+    <h3>Renda x gastos em {{ ano() }}
+      <span class="sub"><span class="sw" style="display:inline-block;background:var(--s1);vertical-align:-1px"></span> Renda &nbsp;
+        <span class="sw" style="display:inline-block;background:var(--s2);vertical-align:-1px"></span> Gastos &nbsp; meses futuros em tom claro</span></h3>
+    <div class="scrollx"><div style="min-width:640px">
+      <svg class="chart" [attr.viewBox]="'0 0 ' + chart.W + ' ' + chart.H" role="img" [attr.aria-label]="'Renda e gastos por mês em ' + ano()">
+        <g class="grid">
+          @for (g of v.grade; track $index) {
+            <line [attr.x1]="v.xGrade[0]" [attr.x2]="v.xGrade[1]" [attr.y1]="g.y" [attr.y2]="g.y" />
+            <text [attr.x]="v.xRotulo" [attr.y]="g.y + 4" text-anchor="end">{{ g.label }}</text>
+          }
+        </g>
+        @for (c of v.colunas; track c.mes) {
+          @for (b of c.barras; track $index) {
+            <path [attr.d]="b!.d" [attr.fill]="b!.cor" [attr.opacity]="b!.opacidade" />
+            <text [attr.x]="b!.tx" [attr.y]="b!.ty" text-anchor="middle" style="font-size:10px;font-weight:600;fill:var(--fg)">{{ b!.txt }}</text>
+          }
+          <text [attr.x]="c.lx" [attr.y]="v.base" text-anchor="middle" [attr.style]="c.atual ? 'fill:var(--fg);font-weight:700' : null">{{ c.mes }}</text>
+          <rect [attr.x]="c.hx" [attr.y]="v.topo" [attr.width]="v.larguraColuna" [attr.height]="v.altura" fill="transparent" [attr.data-tip]="c.tip" />
+        }
+      </svg>
+    </div></div>
+    <div class="scrollx" style="margin-top:12px">
+      <table class="heat">
+        <thead><tr><th></th>@for (m of meses; track m) { <th>{{ m }}</th> }</tr></thead>
+        <tbody>
+          <tr><td><span class="sw" style="display:inline-block;background:var(--s1);margin-right:6px;vertical-align:0"></span>Renda</td>
+            @for (d of v.data; track d.k) { <td>{{ d.R ? f.intBR(d.R) : '·' }}</td> }</tr>
+          <tr><td><span class="sw" style="display:inline-block;background:var(--s2);margin-right:6px;vertical-align:0"></span>Gastos</td>
+            @for (d of v.data; track d.k) { <td>{{ d.G ? f.intBR(d.G) : '·' }}</td> }</tr>
+          <tr class="tot"><td>Sobra</td>
+            @for (d of v.data; track d.k) {
+              <td [style.color]="d.R - d.G < -0.5 ? 'var(--bad)' : 'var(--fg)'">{{ d.has ? f.intBR(d.R - d.G) : '·' }}</td>
+            }</tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card c12">
+    <h3>Gastos por categoria, mês a mês <span class="sub">R$ · cor mais forte = gasto maior</span></h3>
+    <div class="scrollx">
+      <table class="heat">
+        <thead><tr><th>Categoria</th>@for (m of meses; track m) { <th>{{ m }}</th> }<th>Total</th><th>Média</th></tr></thead>
+        <tbody>
+          @for (c of v.calor; track c.nome) {
+            <tr><td>{{ c.nome }}</td>
+              @for (cel of c.celulas; track $index) {
+                <td [style.background]="cel.fundo" [style.color]="cel.claro ? '#fff' : null" [title]="cel.titulo">{{ cel.v ? f.intBR(cel.v) : '·' }}</td>
+              }
+              <td>{{ f.intBR(c.total) }}</td><td>{{ f.intBR(c.media) }}</td></tr>
+          } @empty {
+            <tr><td colspan="15" class="empty">Sem gastos lançados em {{ ano() }}</td></tr>
+          }
+          <tr class="tot"><td>Total</td>
+            @for (d of v.data; track d.k) { <td>{{ d.G ? f.intBR(d.G) : '·' }}</td> }
+            <td>{{ f.intBR(v.gastosAno) }}</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
