@@ -3,10 +3,18 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { mensagemErro } from './auth.service';
 import { keyAdd, keyLabel, todayKey } from './format';
-import { Mes, Perfil } from './models';
+import { Lancamento, Mes, Perfil, Status, Tipo } from './models';
 import { ToastService } from './toast.service';
 
-export type Modal = { tipo: 'renda' } | null;
+export type Modal = { tipo: 'renda' } | { tipo: 'item'; id: string | null } | null;
+
+export interface Filtros { q: string; cat: string; tipo: string; status: string; cartao: string }
+export const SEM_FILTROS: Filtros = { q: '', cat: '', tipo: '', status: '', cartao: '' };
+
+export interface NovoLancamento {
+  item: string; valor: number; cat: string; tipo: Tipo; dia: number; status: Status; cartao: string | null; parcelas: number;
+}
+export type AtualizaLancamento = Omit<NovoLancamento, 'parcelas'>;
 
 /** Estado do app: todos os meses do usuário, o mês selecionado e o perfil. */
 @Injectable({ providedIn: 'root' })
@@ -22,6 +30,7 @@ export class FinancasStore {
   readonly modal = signal<Modal>(null);
   /** Categorias da fatura Nubank abertas no painel. */
   readonly nubAbertas = signal<ReadonlySet<string>>(new Set());
+  readonly filtros = signal<Filtros>(SEM_FILTROS);
 
   readonly chaves = computed(() => Object.keys(this.meses()).sort());
   readonly categorias = computed(() => this.perfil()?.categorias ?? []);
@@ -81,6 +90,36 @@ export class FinancasStore {
     if (r) this.toast.mostrar(r.quantidade ? `${r.quantidade} contas trazidas de ${keyLabel(anterior, true)}` : 'Nada novo para trazer');
   }
 
+  criarItem(req: NovoLancamento): Promise<unknown> {
+    const k = this.cur(), n = req.tipo === 'Parcelado' ? req.parcelas : 1;
+    return this.alterar(firstValueFrom(this.http.post(`/api/meses/${k}/itens`, req)),
+      n > 1 ? `Parcelado em ${n}× lançado até ${keyLabel(keyAdd(k, n - 1), true)}` : 'Lançamento salvo');
+  }
+
+  atualizarItem(id: string, req: AtualizaLancamento): Promise<unknown> {
+    return this.alterar(firstValueFrom(this.http.put(`/api/meses/${this.cur()}/itens/${id}`, req)), 'Lançamento atualizado');
+  }
+
+  async excluir(it: Lancamento, futuras: boolean): Promise<void> {
+    const r = await this.alterar(firstValueFrom(
+      this.http.delete<{ quantidade: number }>(`/api/meses/${this.cur()}/itens/${it.id}`, { params: { futuras } })));
+    if (r) {
+      const n = r.quantidade;
+      this.toast.mostrar(n ? `Excluído junto com ${n} parcela${n > 1 ? 's' : ''} futura${n > 1 ? 's' : ''}` : 'Lançamento excluído');
+    }
+  }
+
+  /** Acrescenta uma categoria criada no formulário à lista do usuário. */
+  async novaCategoria(nome: string): Promise<void> {
+    const atuais = this.categorias();
+    if (atuais.includes(nome)) return;
+    try {
+      this.perfil.set(await firstValueFrom(this.http.put<Perfil>('/api/perfil/categorias', [...atuais, nome])));
+    } catch (e) {
+      this.toast.mostrar(mensagemErro(e, 'Não consegui salvar a categoria.'));
+    }
+  }
+
   /** Executa uma alteração na API e recarrega os meses; devolve a resposta ou undefined se falhou. */
   protected async alterar<T>(req: Promise<T>, ok?: string): Promise<T | undefined> {
     try {
@@ -100,5 +139,6 @@ export class FinancasStore {
     this.carregado.set(false);
     this.cur.set(todayKey);
     this.modal.set(null);
+    this.filtros.set(SEM_FILTROS);
   }
 }

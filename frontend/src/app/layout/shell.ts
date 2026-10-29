@@ -51,6 +51,9 @@ import { MarcaIcone } from './marca-icone';
     </nav>
 
     <div class="tip" [hidden]="!tip()" [innerHTML]="tip()?.html ?? ''" [style.left.px]="tip()?.x" [style.top.px]="tip()?.y"></div>
+    @if (store.carregado()) {
+      <button class="fab" (click)="store.abrir({ tipo: 'item', id: null })" aria-label="Novo lançamento">+</button>
+    }
     <app-modal-host />
     @if (toast.mensagem(); as msg) { <div class="toast" role="status">{{ msg }}</div> }
   `,

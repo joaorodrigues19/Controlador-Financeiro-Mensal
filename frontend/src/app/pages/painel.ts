@@ -1,5 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
-import { FinancasStore } from '../core/financas.store';
+import { Router } from '@angular/router';
+import { FinancasStore, SEM_FILTROS } from '../core/financas.store';
 import {
   TIPOS, TIPO_COR, brl, brl0, catTotals, daysTo, esc, groupNub, keyAdd, keyLabel, parcInfo, pct, porDia, renda, total,
 } from '../core/format';
@@ -95,8 +96,8 @@ import { Lancamento } from '../core/models';
           <h3>Próximos vencimentos <span class="sub">{{ f.brl0(v.A) }} a pagar</span></h3>
           <div class="rows">
             @for (i of v.pend.slice(0, 8); track i.id) {
-              <div class="row">
-                <button class="chk" (click)="store.alternarPagamento(i.id)" [attr.aria-label]="'Marcar ' + i.item + ' como pago'"></button>
+              <div class="row click" (click)="abrirLinha(i)">
+                <button class="chk" (click)="$event.stopPropagation(); store.alternarPagamento(i.id)" [attr.aria-label]="'Marcar ' + i.item + ' como pago'"></button>
                 <div style="min-width:0"><div class="t">{{ i.item }}</div>
                   <div class="m"><span [class]="quando(i).cls">{{ quando(i).txt }}</span> · {{ i.synthetic ? 'fatura · ' + i.n + ' compras' : i.cat }}</div></div>
                 <div class="val num">{{ f.brl(i.valor) }}</div>
@@ -108,13 +109,14 @@ import { Lancamento } from '../core/models';
           @if (v.pend.length > 8) {
             <div class="hint" style="margin-top:6px">+ {{ v.pend.length - 8 }} pendente{{ v.pend.length - 8 > 1 ? 's' : '' }}</div>
           }
+          <button class="btn seeall" (click)="verLancamentos('')">Ver todos os lançamentos →</button>
         </div>
 
         <div class="card c6">
           <h3>Maiores lançamentos</h3>
           <div class="rows">
             @for (i of v.top; track i.id) {
-              <div class="row"><span class="dot" [style.background]="cor(i)"></span>
+              <div class="row click" (click)="abrirLinha(i)"><span class="dot" [style.background]="cor(i)"></span>
                 <div style="min-width:0"><div class="t">{{ i.item }}
                   @if (i.parc) { <span class="tag ptag">{{ i.parc }}</span> }
                   @if (i.cartao) { <span class="tag ctag">{{ i.cartao }}</span> }</div>
@@ -144,7 +146,7 @@ import { Lancamento } from '../core/models';
           <h3>Parcelamentos em andamento <span class="sub">{{ v.parcs.length }} neste mês · {{ f.brl0(v.parcsTotal) }}</span></h3>
           <div class="rows">
             @for (p of v.parcs; track p.i.id) {
-              <div class="row" style="grid-template-columns:minmax(0,1fr) auto"><div style="min-width:0">
+              <div class="row click" (click)="abrirLinha(p.i)" style="grid-template-columns:minmax(0,1fr) auto"><div style="min-width:0">
                 <div class="t">{{ p.i.item }}<span class="tag ptag">{{ p.info.a }} de {{ p.info.n }}</span>
                   @if (p.i.cartao) { <span class="tag ctag">{{ p.i.cartao }}</span> }</div>
                 <div class="m">{{ p.info.falta ? 'faltam ' + p.info.falta + ' · termina em ' + p.info.fim : 'última parcela neste mês' }}</div>
@@ -176,7 +178,7 @@ import { Lancamento } from '../core/models';
                   @if (aberta) {
                     <div class="sublist">
                       @for (i of c.itens; track i.id) {
-                        <div class="sub"><span class="t">{{ i.item }}@if (i.parc) { <span class="tag ptag">{{ i.parc }}</span> }</span>
+                        <div class="sub" (click)="abrirLinha(i)"><span class="t">{{ i.item }}@if (i.parc) { <span class="tag ptag">{{ i.parc }}</span> }</span>
                           <span class="num">{{ f.brl(i.valor) }}</span></div>
                       }
                     </div>
@@ -184,6 +186,7 @@ import { Lancamento } from '../core/models';
                 </div>
               }
             </div>
+            <button class="linkbtn" style="margin-top:12px" (click)="verLancamentos('Nubank')">ver compras da fatura</button>
           } @else {
             <div class="empty">
               @if (v.cartaoUnico) { Fatura lançada como valor único ({{ f.brl(v.cartaoUnico) }}). Lance as compras com a forma "Cartão Nubank" para detalhar. }
@@ -197,6 +200,7 @@ import { Lancamento } from '../core/models';
 })
 export class Painel {
   protected store = inject(FinancasStore);
+  private router = inject(Router);
   protected f = { brl, brl0, pct };
 
   protected rotulo = computed(() => keyLabel(this.store.cur(), true));
@@ -267,6 +271,17 @@ export class Painel {
     if (d === 0) return { txt: 'vence hoje', cls: 'soon' };
     if (d <= 3) return { txt: `em ${d} dia${d > 1 ? 's' : ''}`, cls: 'soon' };
     return { txt: `dia ${i.dia || '—'}`, cls: '' };
+  }
+
+  /** Abre o lançamento para edição; a linha agrupada da fatura leva às compras do cartão. */
+  abrirLinha(i: Lancamento): void {
+    if (i.synthetic) this.verLancamentos('Nubank');
+    else this.store.abrir({ tipo: 'item', id: i.id });
+  }
+
+  verLancamentos(cartao: string): void {
+    this.store.filtros.set({ ...SEM_FILTROS, cartao });
+    this.router.navigateByUrl('/lancamentos');
   }
 
   cor(i: Lancamento): string {
