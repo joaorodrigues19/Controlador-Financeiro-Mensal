@@ -104,11 +104,26 @@ export class FinancasStore {
   async novaCategoria(nome: string): Promise<void> {
     const atuais = this.categorias();
     if (atuais.includes(nome)) return;
+    await this.salvarCategorias([...atuais, nome]);
+  }
+
+  /** Salva a lista de categorias (inclusão, nova ordem ou exclusão de uma sem lançamentos); devolve se deu certo. */
+  async salvarCategorias(lista: string[], ok?: string): Promise<boolean> {
     try {
-      this.perfil.set(await firstValueFrom(this.api.salvarCategorias([...atuais, nome])));
+      this.perfil.set(await firstValueFrom(this.api.salvarCategorias(lista)));
+      if (ok) this.toast.mostrar(ok);
+      return true;
     } catch (e) {
       this.toast.mostrar(mensagemErro(e, 'Não consegui salvar a categoria.'));
+      return false;
     }
+  }
+
+  /** Renomeia a categoria, ou junta com outra que já existe, levando junto os lançamentos de todos os meses. */
+  async renomearCategoria(de: string, para: string, ok: (n: number) => string): Promise<boolean> {
+    const r = await this.alterar(this.api.renomearCategoria(de, para));
+    if (r) this.toast.mostrar(ok(r.quantidade));
+    return !!r;
   }
 
   limpar(): void {

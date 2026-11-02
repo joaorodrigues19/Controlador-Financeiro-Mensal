@@ -47,6 +47,7 @@ Abra http://localhost:4200. As chamadas para `/api` são repassadas para a porta
 | POST | `/api/auth/login` | Entra com e-mail e senha |
 | GET | `/api/perfil` | Nome, e-mail e categorias |
 | PUT | `/api/perfil/categorias` | Salva a lista de categorias |
+| POST | `/api/perfil/categorias/renomear` | Renomeia `{de, para}` em todos os lançamentos (junta se `para` já existe) |
 | GET | `/api/meses` | Todos os meses com seus lançamentos |
 | PUT | `/api/meses/{AAAA-MM}/renda` | Bruto, líquido e extra (gera o dízimo de 10% do bruto) |
 | POST | `/api/meses/{AAAA-MM}/itens` | Novo lançamento (parcelado se espalha pelos meses seguintes) |

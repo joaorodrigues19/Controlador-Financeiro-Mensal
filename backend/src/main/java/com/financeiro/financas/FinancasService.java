@@ -192,6 +192,39 @@ public class FinancasService {
         return novos.size();
     }
 
+    /**
+     * Renomeia a categoria na lista do usuário e em todos os lançamentos dele. Se o novo nome já está na lista,
+     * a categoria antiga sai dela e os lançamentos passam para a existente. Retorna quantos lançamentos mudaram.
+     */
+    public int renomearCategoria(Long usuarioId, String de, String para) {
+        String antigo = de.trim(), novo = para.trim();
+        if (antigo.equals(novo)) {
+            return 0;
+        }
+        List<String> cats = usuarios.findById(usuarioId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED)).getCategorias();
+        int pos = cats.indexOf(antigo);
+        if (cats.contains(novo)) {
+            if (pos >= 0) {
+                cats.remove(pos);
+            }
+        } else if (pos >= 0) {
+            cats.set(pos, novo);
+        } else {
+            cats.add(novo);
+        }
+        int alterados = 0;
+        for (Mes m : meses.findByUsuarioIdOrderByChave(usuarioId)) {
+            for (Lancamento l : m.getItens()) {
+                if (antigo.equals(l.getCat())) {
+                    l.setCat(novo);
+                    alterados++;
+                }
+            }
+        }
+        return alterados;
+    }
+
     /** Mantém o lançamento automático de dízimo em 10% do salário bruto do mês. */
     private void sincronizarDizimo(Mes m) {
         if (m.getBruto().signum() == 0) {

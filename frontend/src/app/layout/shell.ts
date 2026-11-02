@@ -23,7 +23,7 @@ export class Shell implements OnInit {
 
   private url = toSignal(this.router.events.pipe(filter(e => e instanceof NavigationEnd), map(() => this.router.url)),
     { initialValue: this.router.url });
-  protected aba = computed(() => (this.url().startsWith('/visao-geral') ? 'ano' : 'mes'));
+  protected aba = computed(() => (this.url().startsWith('/visao-geral') ? 'ano' : this.url().startsWith('/categorias') ? 'cat' : 'mes'));
   private largura = signal(innerWidth);
   protected rotuloMes = computed(() => (this.aba() === 'ano' ? this.store.cur().slice(0, 4) : keyLabel(this.store.cur(), this.largura() > 500)));
   protected tip = signal<{ html: string; x: number; y: number } | null>(null);

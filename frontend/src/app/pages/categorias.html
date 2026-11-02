@@ -1,0 +1,72 @@
+@let lista = linhas();
+@let ed = edicao();
+<div class="lanchead">
+  <button class="btn" (click)="voltar()">← Voltar ao painel</button>
+  <h2>Categorias</h2>
+</div>
+<div class="card">
+  <form class="toolbar" (ngSubmit)="adicionar()" autocomplete="off">
+    <input class="search" name="nova" placeholder="Nova categoria" aria-label="Nome da nova categoria" [(ngModel)]="nova">
+    <button class="btn primary" type="submit" [disabled]="!nova.trim()">Adicionar</button>
+  </form>
+  <div class="sumline">
+    <span>{{ store.categorias().length }} categorias</span>
+    <span>Ao renomear, os lançamentos de todos os meses passam para o nome novo.</span>
+  </div>
+  <div class="rows">
+    @for (l of lista; track l.nome; let idx = $index) {
+      <div class="catrow">
+        <div class="catmain">
+          <div style="min-width:0">
+            <div class="t">{{ l.nome }}@if (l.avulsa) { <span class="tag">fora da lista</span> }</div>
+            <div class="m">{{ rotuloUso(l.n) }}</div>
+          </div>
+          <div class="catbtns">
+            @if (!l.avulsa) {
+              <button class="ibtn sm" (click)="mover(l.nome, -1)" [disabled]="idx === 0" aria-label="Subir {{ l.nome }}">↑</button>
+              <button class="ibtn sm" (click)="mover(l.nome, 1)" [disabled]="idx === store.categorias().length - 1" aria-label="Descer {{ l.nome }}">↓</button>
+            }
+            <button class="linkbtn" (click)="editar(l, 'renomear')" [attr.aria-expanded]="ed?.nome === l.nome && ed?.modo === 'renomear'">Renomear</button>
+            <button class="linkbtn danger" (click)="editar(l, 'excluir')" [attr.aria-expanded]="ed?.nome === l.nome && ed?.modo === 'excluir'">Excluir</button>
+          </div>
+        </div>
+
+        @if (ed?.nome === l.nome) {
+          <div class="catedit">
+            @if (ed.modo === 'renomear') {
+              <form class="toolbar" (ngSubmit)="renomear(l)" autocomplete="off">
+                <input class="search" name="texto" aria-label="Novo nome" [(ngModel)]="texto">
+                <button class="btn" type="button" (click)="cancelar()">Cancelar</button>
+                <button class="btn primary" type="submit" [disabled]="salvando() || !texto.trim()">{{ juntaCom(l.nome) ? 'Juntar' : 'Salvar' }}</button>
+              </form>
+              @if (juntaCom(l.nome); as alvo) {
+                <p class="hint">Já existe a categoria {{ alvo }}. {{ l.nome }} sai da lista e {{ l.n ? 'os ' + rotuloUso(l.n) + ' vão para ' + alvo : 'nada mais muda' }}.</p>
+              }
+            } @else if (l.n) {
+              <div class="toolbar">
+                <label class="hint" for="destino-{{ idx }}">Mover os {{ rotuloUso(l.n) }} para</label>
+                <select class="sel" id="destino-{{ idx }}" [(ngModel)]="destino">
+                  @for (c of outras(l.nome); track c) { <option [value]="c">{{ c }}</option> }
+                </select>
+                <button class="btn" (click)="cancelar()">Cancelar</button>
+                <button class="btn danger" (click)="excluir(l)" [disabled]="salvando() || !destino">Excluir e mover</button>
+              </div>
+            } @else {
+              <div class="toolbar">
+                <span class="hint">Nenhum lançamento usa {{ l.nome }}.</span>
+                <span class="sp"></span>
+                <button class="btn" (click)="cancelar()">Cancelar</button>
+                <button class="btn danger" [class.armed]="armado()" (click)="excluir(l)" [disabled]="salvando()">{{ armado() ? 'Confirmar exclusão' : 'Excluir' }}</button>
+              </div>
+            }
+            @if (l.nome === catDizimo) {
+              <p class="hint">O dízimo automático dos próximos meses continua sendo lançado em {{ catDizimo }}.</p>
+            }
+          </div>
+        }
+      </div>
+    } @empty {
+      <div class="empty">Nenhuma categoria. Adicione a primeira acima.</div>
+    }
+  </div>
+</div>

@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard, visitanteGuard } from './core/auth/auth.guards';
 import { Shell } from './layout/shell';
+import { Categorias } from './pages/categorias';
 import { Lancamentos } from './pages/lancamentos';
 import { Login } from './pages/login';
 import { Painel } from './pages/painel';
@@ -17,6 +18,7 @@ export const routes: Routes = [
       { path: 'visao-geral', component: VisaoGeral, title: 'Visão geral · Controle Financeiro' },
       { path: 'painel', component: Painel, title: 'Painel · Controle Financeiro' },
       { path: 'lancamentos', component: Lancamentos, title: 'Lançamentos · Controle Financeiro' },
+      { path: 'categorias', component: Categorias, title: 'Categorias · Controle Financeiro' },
     ],
   },
   { path: '**', redirectTo: '' },

@@ -46,5 +46,8 @@ public final class FinancasDtos {
                                      @NotNull Tipo tipo, @Min(1) @Max(31) int dia, @NotNull Status status,
                                      String cartao) {}
 
+    /** Troca o nome da categoria {@code de} por {@code para}; se {@code para} já existe, as duas viram uma só. */
+    public record RenomeiaCategoria(@NotBlank String de, @NotBlank String para) {}
+
     public record Contagem(int quantidade) {}
 }

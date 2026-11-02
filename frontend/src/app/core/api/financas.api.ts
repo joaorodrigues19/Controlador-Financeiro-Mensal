@@ -20,6 +20,11 @@ export class FinancasApi {
     return this.http.put<Perfil>('/api/perfil/categorias', categorias);
   }
 
+  /** Renomeia a categoria em todos os lançamentos (junta com {@code para} se ela já existe). Devolve quantos mudaram. */
+  renomearCategoria(de: string, para: string): Observable<Contagem> {
+    return this.http.post<Contagem>('/api/perfil/categorias/renomear', { de, para });
+  }
+
   meses(): Observable<Mes[]> {
     return this.http.get<Mes[]>('/api/meses');
   }

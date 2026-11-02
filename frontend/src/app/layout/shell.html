@@ -3,13 +3,18 @@
     <div class="brand"><div class="mark" aria-hidden="true"><app-marca-icone /></div><span>Controle Financeiro</span></div>
     <div class="tabs top" role="tablist">
       <a class="tab" routerLink="/visao-geral" [attr.aria-selected]="aba() === 'ano'">Visão geral</a>
-      <a class="tab" routerLink="/painel" [attr.aria-selected]="aba() !== 'ano'">Painel</a>
+      <a class="tab" routerLink="/painel" [attr.aria-selected]="aba() === 'mes'">Painel</a>
     </div>
     <div class="month">
-      <button class="ibtn" (click)="passo(-1)" [attr.aria-label]="aba() === 'ano' ? 'Ano anterior' : 'Mês anterior'">‹</button>
-      <b>{{ rotuloMes() }}</b>
-      <button class="ibtn" (click)="passo(1)" [attr.aria-label]="aba() === 'ano' ? 'Próximo ano' : 'Próximo mês'">›</button>
-      <button class="ibtn lockbtn" (click)="sair()" aria-label="Sair" title="Sair">
+      @if (aba() !== 'cat') {
+        <button class="ibtn" (click)="passo(-1)" [attr.aria-label]="aba() === 'ano' ? 'Ano anterior' : 'Mês anterior'">‹</button>
+        <b>{{ rotuloMes() }}</b>
+        <button class="ibtn" (click)="passo(1)" [attr.aria-label]="aba() === 'ano' ? 'Próximo ano' : 'Próximo mês'">›</button>
+      }
+      <a class="ibtn lockbtn" routerLink="/categorias" [attr.aria-current]="aba() === 'cat' ? 'page' : null" aria-label="Categorias" title="Categorias">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
+      </a>
+      <button class="ibtn" (click)="sair()" aria-label="Sair" title="Sair">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
       </button>
     </div>
@@ -30,7 +35,7 @@
 <nav class="bottom" role="tablist">
   <a class="tab" routerLink="/visao-geral" [attr.aria-selected]="aba() === 'ano'">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>Visão geral</a>
-  <a class="tab" routerLink="/painel" [attr.aria-selected]="aba() !== 'ano'">
+  <a class="tab" routerLink="/painel" [attr.aria-selected]="aba() === 'mes'">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Painel</a>
 </nav>
 
